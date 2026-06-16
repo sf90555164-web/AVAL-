@@ -728,7 +728,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Sego
 <option>MacBook Neo 13</option>
 <option>iPhone 17 Pro</option>
 <option>iPhone 17 Pro Max</option>
-      </select>
+    </select>
     <select id="a-filter-status">
       <option value="">全部狀態</option>
       <option value="Released from Customs at Destination">通關完成</option>
@@ -951,7 +951,7 @@ function switchMainTab(tab, btn) {
 }
 
 // ══════════════ Apple Module ══════════════
-const APPLE_DATA = [{"Apple Part #": "MFYX4ZP/A", "Apple Part Description": "IPHONE 17 PRO MAX DBLUE 1TB A3526-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 17 Pro Max", "DN Number": "QBP6404503", "DN Quantity": 10, "Estimated Delivery Date": "2026-06-16 08:00", "Shipping Status": "Out for Delivery to Connecting Line"}, {"Apple Part #": "MG8N4ZP/A", "Apple Part Description": "IPHONE 17 PRO DEEP BLUE 512GB A3523-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 17 Pro", "DN Number": "QBP6217620", "DN Quantity": 10, "Estimated Delivery Date": "2026-06-16 12:00", "Shipping Status": "Forwarder CFS/Warehouse"}, {"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Number": "QBP6626114", "DN Quantity": 8, "Estimated Delivery Date": "2026-06-16 22:15", "Shipping Status": "Transportation Mode/Leg/Node Change"}, {"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Number": "QBP6203517", "DN Quantity": 30, "Estimated Delivery Date": "2026-06-17 15:00", "Shipping Status": "Transportation Mode/Leg/Node Change"}];
+const APPLE_DATA = [{"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "Estimated Delivery Date": "2026-06-17 15:00", "DN Quantity": 30}, {"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "Estimated Delivery Date": "2026-06-16 22:15", "DN Quantity": 8}, {"Apple Part #": "MFYX4ZP/A", "Apple Part Description": "IPHONE 17 PRO MAX DBLUE 1TB A3526-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 17 Pro Max", "Estimated Delivery Date": "2026-06-16 08:00", "DN Quantity": 10}, {"Apple Part #": "MG8N4ZP/A", "Apple Part Description": "IPHONE 17 PRO DEEP BLUE 512GB A3523-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 17 Pro", "Estimated Delivery Date": "2026-06-16 12:00", "DN Quantity": 10}];
 
 const Apple = (() => {
   let sortCol = 'Estimated Delivery Date', sortAsc = true, filtered = [];
