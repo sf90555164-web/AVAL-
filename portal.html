@@ -725,9 +725,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Sego
     </select>
     <select id="a-filter-sublob">
       <option value="">全部產品</option>
-<option>MacBook Neo 13</option>
-<option>iPhone 17 Pro</option>
-<option>iPhone 17 Pro Max</option>
+
     </select>
     <select id="a-filter-status">
       <option value="">全部狀態</option>
@@ -951,7 +949,7 @@ function switchMainTab(tab, btn) {
 }
 
 // ══════════════ Apple Module ══════════════
-const APPLE_DATA = [{"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "Estimated Delivery Date": "2026-06-17 15:00", "DN Quantity": 30}, {"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "Estimated Delivery Date": "2026-06-16 22:15", "DN Quantity": 8}, {"Apple Part #": "MFYX4ZP/A", "Apple Part Description": "IPHONE 17 PRO MAX DBLUE 1TB A3526-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 17 Pro Max", "Estimated Delivery Date": "2026-06-16 08:00", "DN Quantity": 10}, {"Apple Part #": "MG8N4ZP/A", "Apple Part Description": "IPHONE 17 PRO DEEP BLUE 512GB A3523-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 17 Pro", "Estimated Delivery Date": "2026-06-16 12:00", "DN Quantity": 10}];
+const APPLE_DATA = [];
 
 const Apple = (() => {
   let sortCol = 'Estimated Delivery Date', sortAsc = true, filtered = [];
@@ -1692,7 +1690,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Set update times
-  const appleDate = '2026-06-16';
+  const appleDate = '2026-06-17';
   const esrDate   = '2026-06-15';
   const badge = document.getElementById('main-update-time');
   const ctoDate = '2026-06-16';
