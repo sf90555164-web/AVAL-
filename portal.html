@@ -1795,7 +1795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 #section-price .price-empty { text-align:center; padding:50px; color:#86868b; }
 </style>
 <div class="price-controls">
-  <input type="text" id="price-search" placeholder="搜尋品名、型號、料號...">
+  <input type="text" id="price-search" placeholder="搜尋品名、型號、料號、SRP...">
   <select id="price-sheet-filter">
     <option value="">全部類型</option>
     <option value="iPhone">iPhone</option>
@@ -1866,7 +1866,12 @@ const Price = (() => {
       if (sheet && r.sheet !== sheet) return false;
       const rCat = (r.sheet === '配件' || r.sheet === 'Applecare+') ? r.sheet : r.category;
       if (cat && rCat !== cat) return false;
-      if (q && !r.name.toLowerCase().includes(q) && !r.part_no.toLowerCase().includes(q) && !r.aval_no.toLowerCase().includes(q)) return false;
+      if (q) {
+        const qNum = q.replace(/[$,\s]/g, '');
+        const srpStr = r.srp != null ? String(r.srp) : '';
+        const matchSrp = qNum !== '' && /^\d+$/.test(qNum) && srpStr.includes(qNum);
+        if (!r.name.toLowerCase().includes(q) && !r.part_no.toLowerCase().includes(q) && !r.aval_no.toLowerCase().includes(q) && !matchSrp) return false;
+      }
       return true;
     });
 
