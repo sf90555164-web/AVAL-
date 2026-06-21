@@ -207,6 +207,20 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .s-gold{--stripe:#B7860A;}.s-navy{--stripe:#1B2A4A;}
 
 .safe-bottom{height:env(safe-area-inset-bottom,20px);}
+
+/* ── ADD TO CALENDAR ── */
+.cal-add{margin-left:auto;background:#fff;border:1.5px solid #ddd;border-radius:999px;
+  width:30px;height:30px;flex-shrink:0;display:inline-flex;align-items:center;
+  justify-content:center;font-size:15px;line-height:1;cursor:pointer;
+  transition:transform .15s,border-color .15s;}
+.cal-add:active{transform:scale(.88);border-color:var(--green1);}
+.cal-fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  z-index:300;background:var(--green1);color:#fff;border:none;border-radius:999px;
+  padding:12px 18px;font-size:13px;font-weight:700;letter-spacing:.02em;
+  box-shadow:0 6px 18px rgba(74,124,89,.45);cursor:pointer;
+  display:flex;align-items:center;gap:6px;}
+.cal-fab:active{transform:scale(.95);}
+
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
 </style>
 </head>
@@ -506,6 +520,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 </div>
 <div class="safe-bottom"></div>
 
+<button class="cal-fab" type="button" onclick="exportFullTrip()">📅 加入完整行程</button>
+
 <script>
 const TRIP=[{m:7,d:10},{m:7,d:11},{m:7,d:12},{m:7,d:13},{m:7,d:14},{m:7,d:15},{m:7,d:16}];
 function initToday(){
@@ -546,7 +562,82 @@ function initParallax(){
     tick=true;
   },{passive:true});
 }
-window.addEventListener('DOMContentLoaded',()=>{initToday();initParallax();});
+const YEAR=2026;
+function pad(n){return String(n).padStart(2,'0');}
+function jstToUtc(m,d,hh,mm){return new Date(Date.UTC(YEAR,m-1,d,hh-9,mm,0));}
+function fmtIcsUtc(date){
+  return date.getUTCFullYear()+pad(date.getUTCMonth()+1)+pad(date.getUTCDate())+'T'
+    +pad(date.getUTCHours())+pad(date.getUTCMinutes())+'00Z';
+}
+function icsEscape(s){
+  return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+function buildVEvent(ev,uid){
+  const lines=['BEGIN:VEVENT','UID:'+uid,'DTSTAMP:'+fmtIcsUtc(new Date()),
+    'DTSTART:'+fmtIcsUtc(ev.start),'DTEND:'+fmtIcsUtc(ev.end),'SUMMARY:'+icsEscape(ev.title)];
+  if(ev.addr)lines.push('LOCATION:'+icsEscape(ev.addr));
+  if(ev.note)lines.push('DESCRIPTION:'+icsEscape(ev.note));
+  if(ev.mapLink)lines.push('URL:'+ev.mapLink);
+  lines.push('END:VEVENT');
+  return lines.join('\r\n');
+}
+function buildIcsCalendar(vevents){
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//tokyo-trip-2026//calendar-integration//ZH',
+    'CALSCALE:GREGORIAN',...vevents,'END:VCALENDAR'].join('\r\n');
+}
+function downloadIcs(content,filename){
+  const blob=new Blob([content],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+let ALL_EVENTS=[];
+function initCalendar(){
+  document.querySelectorAll('.day-panel').forEach((panel,dayIdx)=>{
+    const date=TRIP[dayIdx];
+    if(!date)return;
+    const dayEvents=[...panel.querySelectorAll('.event-card')].map(card=>{
+      const timeEl=card.querySelector('.time-hm');
+      if(!timeEl)return null;
+      const [hh,mm]=timeEl.textContent.split(':').map(Number);
+      const title=card.querySelector('.event-title')?.textContent.trim()||'行程';
+      const noteEl=card.querySelector('.event-note');
+      const note=noteEl?noteEl.innerHTML.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'').trim():'';
+      const addr=card.querySelector('.map-addr')?.textContent.trim()||'';
+      const mapLink=card.querySelector('.map-link')?.href||'';
+      return {card,hh,mm,title,note,addr,mapLink};
+    }).filter(Boolean);
+    dayEvents.forEach((ev,i)=>{
+      ev.start=jstToUtc(date.m,date.d,ev.hh,ev.mm);
+      const next=dayEvents[i+1];
+      ev.end=next?jstToUtc(date.m,date.d,next.hh,next.mm):new Date(ev.start.getTime()+90*60000);
+    });
+    ALL_EVENTS.push(...dayEvents);
+  });
+  ALL_EVENTS.forEach((ev,idx)=>{
+    const mapRow=ev.card.querySelector('.map-row');
+    if(!mapRow)return;
+    const btn=document.createElement('button');
+    btn.className='cal-add';
+    btn.type='button';
+    btn.setAttribute('aria-label','加入行事曆');
+    btn.textContent='📅';
+    btn.onclick=()=>{
+      const uid='tokyo2026-'+idx+'-'+ev.start.getTime()+'@trip';
+      downloadIcs(buildIcsCalendar([buildVEvent(ev,uid)]),'tokyo-trip-event-'+(idx+1)+'.ics');
+    };
+    mapRow.appendChild(btn);
+  });
+}
+function exportFullTrip(){
+  const vevents=ALL_EVENTS.map((ev,idx)=>buildVEvent(ev,'tokyo2026-'+idx+'-'+ev.start.getTime()+'@trip'));
+  downloadIcs(buildIcsCalendar(vevents),'tokyo-trip-2026-full.ics');
+}
+
+window.addEventListener('DOMContentLoaded',()=>{initToday();initParallax();initCalendar();});
 </script>
 </body>
 </html>
