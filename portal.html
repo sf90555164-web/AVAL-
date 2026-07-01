@@ -1490,7 +1490,10 @@ const CTO = (() => {
   // config_id = Product Configuration Identifier (e.g. "Z1JX000GC")
   // 若 FG 有 config_id 欄位則精確比對；否則退回 Apple Part # 前綴比對
   function getFgs(r) {
-    return (fgByPo[r.po] || []).filter(f => {
+    const pool = (r.newPo && r.newPo !== r.po)
+      ? (fgByPo[r.po] || []).concat(fgByPo[r.newPo] || [])
+      : (fgByPo[r.po] || []);
+    return pool.filter(f => {
       if (f.config_id) {
         // 精確比對：FG config_id === CTO model (型號)
         return f.config_id === r.model;
