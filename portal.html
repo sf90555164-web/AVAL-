@@ -950,6 +950,16 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Sego
 <script>
 // ── Main tab switcher ──────────────────────────────────────────────────────
 function switchMainTab(tab, btn) {
+  // 搜尋型號在 Apple 當週到貨 / ESR 四週到貨 之間互相保留
+  const aSearch = document.getElementById('a-search');
+  const eSearch = document.getElementById('search-input');
+  if (tab === 'esr' && aSearch && eSearch && eSearch.value !== aSearch.value) {
+    eSearch.value = aSearch.value;
+    if (typeof ESR !== 'undefined') ESR.applyFilters();
+  } else if (tab === 'apple' && aSearch && eSearch && aSearch.value !== eSearch.value) {
+    aSearch.value = eSearch.value;
+    if (typeof Apple !== 'undefined') Apple.applyFilters();
+  }
   document.getElementById('section-apple').style.display = tab === 'apple' ? 'flex' : 'none';
   document.getElementById('section-esr').style.display   = tab === 'esr'   ? 'flex' : 'none';
   document.getElementById('section-cto').style.display   = tab === 'cto'   ? 'flex' : 'none';
@@ -1070,7 +1080,7 @@ const Apple = (() => {
     applyFilters();
   }
 
-  return { sortBy, init };
+  return { sortBy, init, applyFilters };
 })();
 
 
