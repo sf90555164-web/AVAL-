@@ -729,8 +729,6 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Sego
     <select id="a-filter-sublob">
       <option value="">全部產品</option>
 <option>MacBook Neo 13</option>
-<option>MacBook Pro 14</option>
-<option>iPhone 18 Pro</option>
     </select>
     <select id="a-filter-status">
       <option value="">全部狀態</option>
@@ -965,7 +963,7 @@ function switchMainTab(tab, btn) {
 }
 
 // ══════════════ Apple Module ══════════════
-const APPLE_DATA = [{"Apple Part #": "MDE64TA/A", "Apple Part Description": "MBP 14 SL/10C/10C GPU/24GB/1TB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Pro 14", "DN Quantity": 1.0, "Estimated Delivery Date": "2026-09-23 12:00"}, {"Apple Part #": "MHFC4TA/A", "Apple Part Description": "MBN 13 SLV/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Quantity": 6.0, "Estimated Delivery Date": "2026-09-23 15:00"}, {"Apple Part #": "MHFE4TA/A", "Apple Part Description": "MBN 13 CIT/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Quantity": 1.0, "Estimated Delivery Date": "2026-09-23 15:00"}, {"Apple Part #": "MHFG4TA/A", "Apple Part Description": "MBN 13 IND/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Quantity": 8.0, "Estimated Delivery Date": "2026-09-23 15:00"}, {"Apple Part #": "MHFH4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/256GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Quantity": 2.0, "Estimated Delivery Date": "2026-09-23 15:00"}, {"Apple Part #": "MHFJ4TA/A", "Apple Part Description": "MBN 13 BLS/8GB/512GB-TWN", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Quantity": 1.0, "Estimated Delivery Date": "2026-09-23 15:00"}, {"Apple Part #": "MJRX4ZP/A", "Apple Part Description": "IPHONE 18 PRO GLACIER 512GB-ITP", "LOB": "iPhone", "SUB LOB": "iPhone 18 Pro", "DN Quantity": 20.0, "Estimated Delivery Date": "2026-09-24 15:00"}, {"Apple Part #": "Z1TV", "Apple Part Description": "MBN 13 BLS", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "DN Quantity": 1.0, "Estimated Delivery Date": "2026-09-29 15:00"}];
+const APPLE_DATA = [{"Apple Part #": "Z1TV", "Apple Part Description": "MBN 13 BLS", "LOB": "Mac", "SUB LOB": "MacBook Neo 13", "Estimated Delivery Date": "2026-09-24 15:00", "DN Quantity": 1}];
 
 const Apple = (() => {
   let sortCol = 'Estimated Delivery Date', sortAsc = true, filtered = [];
@@ -1711,7 +1709,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Set update times
-  const appleDate = '2026-09-23';
+  const appleDate = '2026-09-24';
   const esrDate   = '2026-09-21';
   const badge = document.getElementById('main-update-time');
   const ctoDate = '2026-09-23';
