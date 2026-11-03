@@ -1856,8 +1856,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <th data-col="name" onclick="Price.sort('name')" style="min-width:240px">品名</th>
         <th data-col="srp" onclick="Price.sort('srp')" style="text-align:right">SRP</th>
         <th data-col="dealer" onclick="Price.sort('dealer')" style="text-align:right">經銷報價(含稅)</th>
-        <th data-col="moq" onclick="Price.sort('moq')" style="text-align:right">MOQ</th>
         <th data-col="gp" onclick="Price.sort('gp')" style="text-align:right">GP%</th>
+        <th data-col="moq" onclick="Price.sort('moq')" style="text-align:right">MOQ</th>
       </tr>
     </thead>
     <tbody id="price-tbody"></tbody>
@@ -1937,8 +1937,8 @@ const Price = (() => {
         <td>${r.name}</td>
         <td class="price-srp">${fmt(r.srp)}</td>
         <td class="price-dealer">${fmt(r.dealer)}</td>
-        <td class="price-moq" style="text-align:right;font-variant-numeric:tabular-nums">${r.moq ?? 1}</td>
         <td class="price-gp">${gpStr}</td>
+        <td class="price-moq" style="text-align:right;font-variant-numeric:tabular-nums">${r.moq ?? 1}</td>
       </tr>`;
     }).join('');
   }
