@@ -90,7 +90,7 @@ async function unlockPL(){const pw=document.getElementById('plpw').value,msg=doc
   document.getElementById('p-gm').innerHTML=gm();document.getElementById('p-sum').innerHTML=summary();
  }catch(e){msg.textContent='密碼錯誤'}}
 function gm(){if(D.profit)return gm0();return `<div class="card" style="max-width:360px;margin:40px auto;text-align:center"><h2>損益預估</h2><div class="s">此頁需要密碼</div><input id="plpw" type="password" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')unlockPL()" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;margin:6px 0 10px"><button onclick="unlockPL()" style="width:100%;border:0;background:var(--b);color:#fff;border-radius:10px;padding:10px;font:inherit;font-weight:600;cursor:pointer">解鎖</button><div id="plmsg" class="s" style="color:#d70015;margin:8px 0 0"></div></div>`}
-const panes=[{id:'sum',tab:'匯總',html:summary()},...(D.pl_enc?[{id:'gm',tab:'損益預估',html:gm()}]:[]),{id:'gu',tab:'暐固',html:co('暐固')},{id:'mono',tab:'Mono',html:sg('Mono')},{id:'itls',tab:'ITLS',html:sg('ITLS')},{id:'en',tab:'暐恩',html:co('暐恩')}];
+const panes=[{id:'sum',tab:'匯總',html:summary()},{id:'gu',tab:'暐固',html:co('暐固')},{id:'mono',tab:'Mono',html:sg('Mono')},{id:'itls',tab:'ITLS',html:sg('ITLS')},{id:'en',tab:'暐恩',html:co('暐恩')},...(D.pl_enc?[{id:'gm',tab:'損益預估',html:gm()}]:[])];
 document.getElementById('meta').textContent='資料至 '+D.end+'｜'+D.fcstfile.split(' ')[1];
 document.getElementById('seg').innerHTML=panes.map((p,i)=>`<button data-id="${p.id}" class="${i?'':'on'}" onclick="show('${p.id}')">${p.tab}</button>`).join('');
 document.getElementById('panes').innerHTML=panes.map((p,i)=>`<div class="pane ${i?'':'on'}" id="p-${p.id}">${p.html}</div>`).join('');
