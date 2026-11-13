@@ -704,9 +704,17 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Sego
   <button class="main-tab-btn" data-tab="price" onclick="switchMainTab('price',this)">
     價格表
   </button>
+  <button class="main-tab-btn" data-tab="perf" onclick="switchMainTab('perf',this)">
+    績效追蹤
+  </button>
   <button class="main-tab-btn" data-tab="sales" onclick="location.href='https://sf90555164-web.github.io/AVAL-/apple.html'">
     銷售分析
   </button>
+</div>
+
+<!-- ── 績效追蹤 Section ───────────────────────────── -->
+<div id="section-perf" class="main-section" style="display:none;flex-direction:column;background:#f5f5f7;">
+  <iframe id="perf-frame" data-src="perf.html" style="flex:1;width:100%;border:0;background:#f5f5f7;" title="績效追蹤"></iframe>
 </div>
 
 <!-- ── Apple Section ───────────────────────────────── -->
@@ -975,6 +983,8 @@ function switchMainTab(tab, btn) {
   document.getElementById('section-esr').style.display   = tab === 'esr'   ? 'flex' : 'none';
   document.getElementById('section-cto').style.display   = tab === 'cto'   ? 'flex' : 'none';
   document.getElementById('section-price').style.display = tab === 'price' ? 'flex' : 'none';
+  document.getElementById('section-perf').style.display  = tab === 'perf'  ? 'flex' : 'none';
+  if (tab === 'perf') { const f = document.getElementById('perf-frame'); if (!f.src) f.src = f.dataset.src + '?t=' + Date.now(); }
   document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
 }
 
