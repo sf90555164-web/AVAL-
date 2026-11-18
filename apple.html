@@ -223,9 +223,11 @@ table.ptable tbody tr.grandtotal td.num{color:#1d1d1f;}
   <span class="topbar-title">Sales Analytics</span>
   <span class="topbar-sub">LS + MONO</span>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('pivot')">產品階層分析</button>
-    <button class="tab-btn" onclick="switchTab('ranking')">排行榜</button>
-    <button class="tab-btn" onclick="switchTab('trend')">趨勢圖</button>
+    <button class="tab-btn" data-tab="pivot2" onclick="switchTab('pivot2')">自由樞紐</button>
+    <button class="tab-btn active" data-tab="pivot" onclick="switchTab('pivot')">產品階層分析</button>
+    <button class="tab-btn" data-tab="wkov" onclick="switchTab('wkov')">每週總覽</button>
+    <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')">排行榜</button>
+    <button class="tab-btn" data-tab="trend" onclick="switchTab('trend')">趨勢圖</button>
   </div>
   <div class="topbar-right">
     <span class="pill" id="pillCount">— 筆</span>
@@ -422,6 +424,674 @@ table.ptable tbody tr.grandtotal td.num{color:#1d1d1f;}
         </div>
       </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--WK_UI_START-->
+<style>
+.wk-root{display:none;flex:1;min-width:0;flex-direction:column;overflow:hidden;}
+body.wk-mode .wk-root{display:flex;}
+body.wk-mode .sidebar,body.wk-mode .kpi-wrapper,body.wk-mode .main > .toolbar,body.wk-mode .main > .content{display:none !important;}
+.wk-bar{padding:8px 16px;background:var(--surface2);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;}
+.wk-body{flex:1;overflow:auto;padding:14px;}
+.wk-asof{margin-left:auto;font-size:11px;color:var(--text3);}
+.wk-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+.wk-kpi{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);}
+.wk-kpi .l{font-size:11px;color:var(--text3);font-weight:600;}
+.wk-kpi .v{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-top:2px;font-variant-numeric:tabular-nums;}
+.wk-kpi .s{font-size:11px;color:var(--text3);margin-top:2px;}
+.wk-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px;}
+@media(max-width:1100px){.wk-grid2{grid-template-columns:1fr;}}
+.wk-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px;}
+.wk-grid2 .wk-card{margin-bottom:0;}
+.wk-card-hd{padding:9px 14px;border-bottom:1px solid var(--border-light);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.wk-card-hd .sub{font-weight:400;color:var(--text3);font-size:11px;}
+.wk-card-bd{padding:12px 14px;position:relative;}
+.wk-card-bd.chart{height:280px;}
+.wk-scroll{overflow:auto;max-height:520px;}
+.wk-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.wk-tbl th{background:#f5f5f7;padding:6px 10px;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:3;text-align:right;}
+.wk-tbl th:first-child,.wk-tbl td:first-child{text-align:left;position:sticky;left:0;z-index:4;min-width:200px;box-shadow:1px 0 0 var(--border-light);}
+.wk-tbl th:first-child{background:#f5f5f7;z-index:6;}
+.wk-tbl td:first-child{background:var(--surface);}
+.wk-tbl tr.grp td:first-child{background:#f0f4ff;}
+.wk-tbl tr.tot td:first-child{background:#fff;}
+.wk-tbl tr:hover td:first-child{background:#f0f7ff;}
+.wk-tbl td{padding:5px 10px;border-bottom:1px solid var(--border-light);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums;color:var(--text2);background:var(--surface);}
+.wk-tbl td:first-child{color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis;}
+.wk-tbl tr:hover td{background:#f0f7ff;}
+.wk-tbl tr.grp td{background:#f0f4ff;font-weight:600;color:var(--text);cursor:pointer;}
+.wk-tbl tr.tot td{background:#fff;font-weight:700;border-top:2px solid #1d1d1f;border-bottom:2px solid #1d1d1f;}
+.wk-tbl td.cur{background:#fafcff;font-weight:600;}
+.wk-tbl .dim{color:var(--text3);}
+.wk-tbl .ind1{padding-left:26px;} .wk-tbl .ind2{padding-left:42px;}
+.wk-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;background:#eef;color:#557;font-weight:500;}
+.wk-tag.nb{background:#f2f2f4;color:#8a8a8f;}
+.wk-woi-hi{color:#c0392b;font-weight:700;} .wk-woi-lo{color:#bf5a0b;font-weight:700;}
+.wk-pill{display:inline-flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.wk-pill button{border:none;background:var(--surface);padding:4px 11px;font-size:11px;font-family:inherit;cursor:pointer;color:var(--text2);}
+.wk-pill button.on{background:var(--accent);color:#fff;}
+.wk-list{list-style:none;padding:0;margin:0;font-size:12px;}
+.wk-list li{padding:5px 14px;border-bottom:1px solid var(--border-light);display:flex;gap:8px;align-items:center;}
+.wk-list li:last-child{border-bottom:none;}
+.wk-list .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wk-note{font-size:11px;color:var(--text3);padding:6px 14px;}
+.wk-err{padding:40px;text-align:center;color:#c0392b;font-size:13px;}
+</style>
+
+<div class="wk-root" id="wkRoot">
+  <div class="wk-bar" id="wkBar"></div>
+  <div class="wk-body" id="wkBody"><div class="empty">載入中…</div></div>
+</div>
+
+<script>
+const WK={
+  D:null, C:null, S:null, charts:[], tab:'wkov', last:null,
+  st:{q:null,rtm:'all',ph1:'all',dim:'hq',metric:'st',exp:new Set(),heat:true,
+      sRtm:'Mono',sPh1:'all',sQ:null,sHq:true}
+};
+const WK_PH1=['iPhone','iPad','Mac','Watch','AirPods'];
+const wkN=v=>Math.round(v||0).toLocaleString();
+const wkSh=n=>(typeof shortHq==='function'?shortHq(n):n);
+function wkDl(c,p){
+  if(!p)return '<span class="dim">—</span>';
+  const x=(c-p)/Math.abs(p)*100;
+  if(Math.abs(x)<0.1)return '<span class="delta-zero">±0%</span>';
+  return `<span class="${x>0?'delta-up':'delta-dn'}">${x>0?'▲':'▼'}${Math.abs(x).toFixed(1)}%</span>`;
+}
+function wkWoi(inv,st5){
+  if(!st5)return inv>0?'<span class="dim">∞</span>':'<span class="dim">—</span>';
+  const w=inv/st5, cls=(w>=8&&inv>=30)?'wk-woi-hi':(w<=1.5&&st5>=10)?'wk-woi-lo':'';
+  return `<span class="${cls}">${w.toFixed(1)}</span>`;
+}
+function wkWeekLabels(q){
+  const m=WK.D.qmeta[q]; const s=new Date(m.start+'T00:00:00');
+  return Array.from({length:m.weeks},(_,i)=>{const d=new Date(s.getTime()+i*7*864e5);return `W${i+1} ${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;});
+}
+function wkPrevQ(q){const a=WK.D.meta.quarters,i=a.indexOf(q);return i>0?a[i-1]:null;}
+
+// ── 資料取用 ──
+function wkRows(src,q,rtm,ph1){
+  return src.filter(r=>r.q===q&&(rtm==='all'||r.rtm===rtm)&&(ph1==='all'||r.ph1===ph1));
+}
+function wkAgg(rows,keyFn,k){
+  const m=new Map();
+  for(const r of rows){
+    const key=keyFn(r);let a=m.get(key);
+    if(!a){a={key,ts:0,st:0,inv:0,ts5:0,st5:0,y1ts:0,y1st:0,tsw:new Array(k).fill(0),stw:new Array(k).fill(0)};m.set(key,a);}
+    a.ts+=r.ts||0;a.st+=r.st||0;a.inv+=r.inv||0;a.ts5+=r.ts5||0;a.st5+=r.st5||0;a.y1ts+=r.y1ts||0;a.y1st+=r.y1st||0;
+    for(let i=0;i<k;i++){a.stw[i]+=(r.stw&&r.stw[i])||0;if(r.tsw)a.tsw[i]+=r.tsw[i]||0;}
+  }
+  return m;
+}
+const wkSum=(a,n)=>a.slice(0,n).reduce((s,x)=>s+x,0);
+
+// ── 啟動／切換 ──
+WK.load=async function(){
+  if(WK.D)return true;
+  try{
+    // 用 <script> 載入（雙擊本機檔案 file:// 也能讀；fetch 在 file:// 會被瀏覽器擋）
+    await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='apple_weekly.js?v='+Date.now();sc.onload=ok;sc.onerror=()=>no(new Error('找不到 apple_weekly.js'));document.head.appendChild(sc);});
+    const d=window.APPLE_WEEKLY;if(!d)throw new Error('資料格式錯誤');
+    const mk=(cols,rows)=>rows.map(r=>{const o={};cols.forEach((c,i)=>o[c]=r[i]);return o;});
+    WK.C=mk(d.chCols,d.ch);WK.S=mk(d.stCols,d.st);WK.D=d;
+    WK.st.q=d.meta.cur;WK.st.sQ=d.meta.cur;
+    return true;
+  }catch(e){
+    document.getElementById('wkBody').innerHTML=`<div class="wk-err">無法載入每週資料（${e.message}）。<br>請確認 apple_weekly.js 與 apple.html 放在同一個資料夾。</div>`;
+    return false;
+  }
+};
+WK.show=async function(t){
+  WK.tab=t;document.body.classList.add('wk-mode');
+  document.getElementById('wkBody').innerHTML='<div class="empty">載入中…</div>';
+  if(await WK.load())WK.render();
+};
+WK.hide=function(){document.body.classList.remove('wk-mode');WK.killCharts();};
+WK.killCharts=function(){WK.charts.forEach(c=>{try{c.destroy();}catch(e){}});WK.charts=[];};
+WK.set=function(k,v){WK.st[k]=v;WK.render();};
+WK.toggle=function(k){const s=WK.st.exp;s.has(k)?s.delete(k):s.add(k);WK.render();};
+WK.render=function(){
+  WK.killCharts();
+  if(!WK.D)return;
+  if(window.ChartDataLabels){try{Chart.unregister(ChartDataLabels);}catch(e){}}
+  WK.rOverview();
+};
+WK.sel=(id,opts,cur,fn)=>`<select class="tool-sel" onchange="${fn}">${opts.map(o=>`<option value="${o[0]}"${String(o[0])===String(cur)?' selected':''}>${o[1]}</option>`).join('')}</select>`;
+WK.pill=(opts,cur,key)=>`<span class="wk-pill">${opts.map(o=>`<button class="${o[0]===cur?'on':''}" onclick="WK.set('${key}','${o[0]}')">${o[1]}</button>`).join('')}</span>`;
+WK.qOpts=()=>WK.D.meta.quarters.slice().reverse().map(q=>[q,q+(WK.D.qmeta[q].weeks<13?` (前${WK.D.qmeta[q].weeks}週)`:'')]);
+WK.asof=q=>{const m=WK.D.qmeta[q];return `<span class="wk-asof">資料截止 ${m.asof}（Apple ${q} 第 ${m.weeks} 週）· 檔案日期 ${m.file}</span>`;};
+WK.ph1Opts=()=>[['all','全部產品']].concat(WK_PH1.map(p=>[p,p]));
+WK.dl=function(){
+  if(!WK.last||!window.XLSX)return;
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(WK.last.aoa),WK.last.name.slice(0,30));
+  XLSX.writeFile(wb,`Apple_${WK.last.name}_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`);
+};
+WK.dlBtn='<button class="tbtn-dl" style="margin-left:6px" onclick="WK.dl()">⬇ 下載 Excel</button>';
+
+const WK_OPT={responsive:true,maintainAspectRatio:false,animation:{duration:200},
+  plugins:{datalabels:{display:false},legend:{position:'bottom',labels:{boxWidth:12,font:{size:11},color:'#6e6e73'}},
+           tooltip:{mode:'index',intersect:false}},
+  scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{beginAtZero:true,grid:{color:'#eee'},ticks:{font:{size:10}}}}};
+const WK_COL=['#0071e3','#1a7f37','#bf5a0b','#8e44ad','#c0392b','#16a085','#7f8c8d','#d4a017'];
+
+// ══════════════ 1. 每週總覽 ══════════════
+WK.rOverview=function(){
+  const s=WK.st,D=WK.D,q=s.q,k=D.qmeta[q].weeks,pq=wkPrevQ(q);
+  document.getElementById('wkBar').innerHTML=
+    '<span class="tool-label">季度</span>'+WK.sel('',WK.qOpts(),q,"WK.set('q',this.value)")+
+    '<span class="tool-label">通路</span>'+WK.pill([['all','全部'],['Mono','Mono'],['Lifestyle','Lifestyle']],s.rtm,'rtm')+
+    '<span class="tool-label">產品線</span>'+WK.sel('',WK.ph1Opts(),s.ph1,"WK.set('ph1',this.value)")+WK.asof(q);
+  const rows=wkRows(WK.C,q,s.rtm,s.ph1);
+  const T=[...wkAgg(rows,()=>'t',k).values()][0]||{ts:0,st:0,inv:0,st5:0,y1st:0,y1ts:0,tsw:new Array(k).fill(0),stw:new Array(k).fill(0)};
+  const pT=pq?([...wkAgg(wkRows(WK.C,pq,s.rtm,s.ph1),()=>'t',13).values()][0]||null):null;
+  const pAl=pT?wkSum(pT.stw,k):0, pAlTs=pT?wkSum(pT.tsw,k):0;
+  const last=T.stw[k-1]||0, prev=k>1?T.stw[k-2]:0;
+  const gap=T.ts-T.st;
+  const kp=(l,v,sub)=>`<div class="wk-kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub||'&nbsp;'}</div></div>`;
+  const kpis=[
+    kp(`QTD 銷售 ST（${k}週）`,wkN(T.st),`5週均 ${wkN(T.st5)}`),
+    kp('最新週 ST',wkN(last),`較前一週 ${wkDl(last,prev)}`),
+    kp('YoY（同週對齊）',wkDl(T.st,T.y1st),`去年同期 ${wkN(T.y1st)}`),
+    kp('QoQ（同週對齊）',pq?wkDl(T.st,pAl):'<span class="dim">—</span>',pq?`${pq} 前${k}週 ${wkN(pAl)}`:'無上一季'),
+    kp(`QTD 進貨 TS`,wkN(T.ts),`TS YoY ${wkDl(T.ts,T.y1ts)}　QoQ ${pq?wkDl(T.ts,pAlTs):'—'}`),
+    kp('進銷差 TS−ST',(gap>0?'+':'')+wkN(gap),gap>0?'進貨 > 銷售（累積庫存）':'銷售 > 進貨（消化庫存）'),
+    kp('通路庫存',wkN(T.inv),`WOI ${wkWoi(T.inv,T.st5)} 週`)
+  ];
+  // 表：客戶
+  const hqM=[...wkAgg(rows,r=>r.rtm+'|'+r.hq,k).values()].sort((a,b)=>b.st-a.st);
+  const hqRows=hqM.map(a=>{const [rt,hq]=a.key.split('|');const l=a.stw[k-1];
+    return `<tr><td>${wkSh(hq)}<span class="wk-tag">${rt}</span></td><td class="cur">${wkN(a.st)}</td><td>${T.st?(a.st/T.st*100).toFixed(1)+'%':'—'}</td><td>${wkN(l)}</td><td>${wkDl(l,k>1?a.stw[k-2]:0)}</td><td>${wkN(a.st5)}</td><td>${wkDl(a.st,a.y1st)}</td><td>${wkN(a.ts)}</td><td>${wkN(a.inv)}</td><td>${wkWoi(a.inv,a.st5)}</td></tr>`;}).join('');
+  // 產品
+  const pM=[...wkAgg(rows,r=>r.ph1+'|'+r.ph3,k).values()].filter(a=>a.st||a.inv);
+  const pTop=pM.slice().sort((a,b)=>b.st-a.st).slice(0,15);
+  const pRows=pTop.map(a=>{const [p1,p3]=a.key.split('|');const l=a.stw[k-1];
+    return `<tr><td>${p3||p1}<span class="wk-tag nb">${p1}</span></td><td class="cur">${wkN(a.st)}</td><td>${wkN(l)}</td><td>${wkDl(l,k>1?a.stw[k-2]:0)}</td><td>${wkDl(a.st,a.y1st)}</td><td>${wkN(a.inv)}</td><td>${wkWoi(a.inv,a.st5)}</td></tr>`;}).join('');
+  // 週環比 / 庫存風險
+  const mv=pM.filter(a=>k>1&&(a.stw[k-1]+a.stw[k-2])>=20).map(a=>({a,d:a.stw[k-1]-a.stw[k-2]}));
+  const up=mv.slice().sort((x,y)=>y.d-x.d).slice(0,5), dn=mv.slice().sort((x,y)=>x.d-y.d).slice(0,5);
+  const li=(a,txt)=>`<li><span class="n">${a.key.split('|')[1]||a.key.split('|')[0]}<span class="wk-tag nb">${a.key.split('|')[0]}</span></span><span>${txt}</span></li>`;
+  const hi=pM.filter(a=>a.inv>=30&&a.st5>0&&a.inv/a.st5>=8).sort((x,y)=>y.inv/y.st5-x.inv/x.st5).slice(0,6);
+  const lo=pM.filter(a=>a.st5>=10&&a.inv/a.st5<=1.5).sort((x,y)=>x.inv/x.st5-y.inv/y.st5).slice(0,6);
+  const nb=d=>d||'<li><span class="n dim">無</span></li>';
+  document.getElementById('wkBody').innerHTML=
+    `<div class="wk-kpis">${kpis.join('')}</div>
+     <div class="wk-grid2" style="margin-bottom:14px">
+       <div class="wk-card"><div class="wk-card-hd">各季週別銷售 ST（依週次對齊）<span class="sub">粗線＝${q}</span></div><div class="wk-card-bd chart"><canvas id="wkC1"></canvas></div></div>
+       <div class="wk-card"><div class="wk-card-hd">${q} 週別 進貨 vs 銷售<span class="sub">折線＝累計進銷差（右軸）</span></div><div class="wk-card-bd chart"><canvas id="wkC2"></canvas></div></div>
+     </div>
+     <div class="wk-grid2" style="margin-bottom:14px">
+       <div class="wk-card"><div class="wk-card-hd">週環比 變動最大（最新週 vs 前一週，限 ST 合計≥20）<span class="sub">依產品階層3</span></div>
+         <div style="display:grid;grid-template-columns:1fr 1fr"><ul class="wk-list">${nb(up.map(x=>li(x.a,`<span class="delta-up">+${wkN(x.d)}</span>`)).join(''))}</ul><ul class="wk-list" style="border-left:1px solid var(--border-light)">${nb(dn.map(x=>li(x.a,`<span class="delta-dn">${wkN(x.d)}</span>`)).join(''))}</ul></div></div>
+       <div class="wk-card"><div class="wk-card-hd">庫存風險<span class="sub">WOI＝庫存 ÷ 5週均銷（週）；高：≥8 週且庫存≥30；低：≤1.5 週且 5週均≥10</span></div>
+         <div style="display:grid;grid-template-columns:1fr 1fr"><ul class="wk-list">${nb(hi.map(a=>li(a,`<span class="wk-woi-hi">${(a.inv/a.st5).toFixed(1)}週</span> <span class="dim">庫存${wkN(a.inv)}</span>`)).join(''))}</ul><ul class="wk-list" style="border-left:1px solid var(--border-light)">${nb(lo.map(a=>li(a,`<span class="wk-woi-lo">${(a.inv/a.st5).toFixed(1)}週</span> <span class="dim">庫存${wkN(a.inv)}</span>`)).join(''))}</ul></div></div>
+     </div>
+     <div class="wk-card"><div class="wk-card-hd">客戶別（${q}）</div><div class="wk-scroll"><table class="wk-tbl"><thead><tr><th>客戶</th><th>QTD ST</th><th>佔比</th><th>最新週</th><th>週環比</th><th>5週均</th><th>YoY</th><th>QTD TS</th><th>庫存</th><th>WOI</th></tr></thead><tbody>${hqRows}</tbody></table></div></div>
+     <div class="wk-card"><div class="wk-card-hd">產品別 Top 15（${q}）</div><div class="wk-scroll"><table class="wk-tbl"><thead><tr><th>產品</th><th>QTD ST</th><th>最新週</th><th>週環比</th><th>YoY</th><th>庫存</th><th>WOI</th></tr></thead><tbody>${pRows}</tbody></table></div></div>
+     <div class="wk-note">篩選：${D.meta.filters}。YoY 為 Apple 檔案內「去年同期(QTD)」欄位，週數已對齊；QoQ 為上一季前 ${k} 週。庫存為經銷商回報庫存（Rptd Inv）。</div>`;
+  // charts
+  const qs=D.meta.quarters;
+  const ds=qs.map((x,i)=>{const kk=D.qmeta[x].weeks;const a=[...wkAgg(wkRows(WK.C,x,s.rtm,s.ph1),()=>'t',kk).values()][0];
+    const col=WK_COL[i%WK_COL.length];const isC=x===q;
+    return {label:x,data:a?a.stw:[],borderColor:col,backgroundColor:col,borderWidth:isC?3.5:1.6,pointRadius:isC?3:0,tension:.1};});
+  WK.charts.push(new Chart(document.getElementById('wkC1'),{type:'line',data:{labels:Array.from({length:13},(_,i)=>'W'+(i+1)),datasets:ds},options:WK_OPT}));
+  let cum=0;const cumA=T.tsw.map((v,i)=>cum+=v-T.stw[i]);
+  const o2=JSON.parse(JSON.stringify(WK_OPT));o2.scales.y1={position:'right',grid:{display:false},ticks:{font:{size:10}}};
+  WK.charts.push(new Chart(document.getElementById('wkC2'),{data:{labels:wkWeekLabels(q),datasets:[
+    {type:'bar',label:'進貨 TS',data:T.tsw,backgroundColor:'#0071e3aa',yAxisID:'y'},
+    {type:'bar',label:'銷售 ST',data:T.stw,backgroundColor:'#1a7f37aa',yAxisID:'y'},
+    {type:'line',label:'累計進銷差',data:cumA,borderColor:'#c0392b',backgroundColor:'#c0392b',yAxisID:'y1',tension:.1,pointRadius:2}]},options:o2}));
+  WK.last=null;
+};
+</script>
+<!--WK_UI_END-->
+
+<!--PV_UI_START-->
+<style>
+.pv-root{display:none;flex:1;min-width:0;flex-direction:column;overflow:hidden;background:var(--bg);}
+body.pv-mode .pv-root{display:flex;}
+body.pv-mode .sidebar,body.pv-mode .kpi-wrapper,body.pv-mode .main > .toolbar,body.pv-mode .main > .content{display:none !important;}
+.pv-head{padding:7px 14px;background:var(--surface2);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0;}
+.pv-head .lb{font-size:11px;color:var(--text3);font-weight:500;white-space:nowrap;}
+.pv-pill{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.pv-pill button{border:none;background:var(--surface);padding:4px 10px;font-size:11px;font-family:inherit;cursor:pointer;color:var(--text2);border-right:1px solid var(--border-light);}
+.pv-pill button:last-child{border-right:none;}
+.pv-pill button.on{background:var(--accent);color:#fff;}
+.pv-areas{padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border-light);display:grid;grid-template-columns:minmax(0,1.9fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);gap:8px;flex-shrink:0;}
+@media(max-width:1100px){.pv-areas{grid-template-columns:1fr 1fr;}}
+.pv-zone{border:1.5px dashed var(--border);border-radius:8px;padding:4px 8px 6px;min-height:50px;background:var(--surface2);}
+.pv-zone.over{border-color:var(--accent);background:var(--accent-light);}
+.pv-zone .zt{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.5px;margin-bottom:4px;}
+.pv-zone .zb{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-height:24px;}
+.pv-zone .hint{font-size:11px;color:var(--text3);}
+.pv-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:14px;font-size:12px;background:#e8f1fd;color:#0a58b5;border:1px solid #c5dcf7;cursor:grab;user-select:none;white-space:nowrap;}
+.pv-chip.lc{background:#fff;color:var(--text2);border-color:var(--border);cursor:pointer;}
+.pv-chip.lc.used{opacity:.45;}
+.pv-fb{border:1px solid #9ec2ee;background:#fff;color:#0a58b5;border-radius:11px;padding:2px 9px;font-size:11px;font-family:inherit;cursor:pointer;line-height:1.5;}
+.pv-fb:hover{background:#d9e9fb;}
+.pv-fb.act{background:#fff4d6;border-color:#f0d58a;color:#8a5a00;font-weight:600;}
+.pv-chip b{font-weight:400;cursor:pointer;color:#8a8a8f;padding:0 1px;}
+.pv-chip b:hover{color:#c0392b;}
+.pv-chip .no{font-size:10px;background:#0a58b5;color:#fff;border-radius:8px;padding:0 5px;}
+.pv-flt{display:none;padding:5px 14px;background:#fffaf0;border-bottom:1px solid #f0e2b8;font-size:12px;color:#8a5a00;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0;}
+.pv-flt.on{display:flex;}
+.pv-flt .pv-chip{background:#fff4d6;border-color:#f0d58a;color:#8a5a00;cursor:default;}
+.pv-flt a{color:var(--accent);cursor:pointer;margin-left:6px;}
+.pv-wrap{flex:1;overflow:auto;padding:12px 14px;min-height:0;}
+.pv-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);box-shadow:var(--shadow);overflow:auto;max-height:100%;}
+table.pv-tbl{border-collapse:separate;border-spacing:0;font-size:12px;min-width:100%;}
+.pv-tbl th{height:28px;box-sizing:border-box;background:#f5f5f7;padding:5px 10px;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);border-right:1px solid var(--border-light);white-space:nowrap;text-align:center;position:sticky;z-index:3;}
+.pv-tbl th.rh{left:0;z-index:7;text-align:left;min-width:230px;background:#f5f5f7;}
+.pv-tbl th.bc{cursor:pointer;}
+.pv-tbl th.bc:hover{background:#e8f1fd;}
+.pv-tbl th.base{background:#fff4d6;color:#8a5a00;}
+.pv-tbl th.tot{background:#e8e8ed;color:var(--accent);}
+.pv-tbl td{padding:4px 10px;border-bottom:1px solid var(--border-light);border-right:1px solid #f0f0f3;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--text2);background:var(--surface);}
+.pv-tbl td.lab{position:sticky;left:0;z-index:2;text-align:left;color:var(--text);background:var(--surface);box-shadow:1px 0 0 var(--border-light);max-width:340px;overflow:hidden;text-overflow:ellipsis;}
+.pv-tbl tr.l0 td{font-weight:600;background:#f0f4ff;}
+.pv-tbl tr.l0 td.lab{background:#f0f4ff;}
+.pv-tbl tr.gt td{font-weight:700;background:#fff;border-top:2px solid #1d1d1f;border-bottom:2px solid #1d1d1f;}
+.pv-tbl tr.gt td.lab{background:#fff;}
+.pv-tbl tr:hover td{background:#f0f7ff;}
+.pv-tbl tr:hover td.lab{background:#f0f7ff;}
+.pv-tbl td.tot{background:#fafafc;font-weight:600;}
+.pv-tbl td.cmp{background:#fffaf0;}
+.pv-tg{cursor:pointer;display:inline-block;width:16px;color:var(--text3);}
+.pv-d{font-size:10px;line-height:1.2;}
+.pv-na{color:#c7c7cc;}
+.pv-pop{position:fixed;z-index:9999;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;width:250px;max-height:380px;display:flex;flex-direction:column;}
+.pv-pop input[type=text]{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;margin-bottom:5px;font-family:inherit;}
+.pv-pop .ls{overflow:auto;flex:1;}
+.pv-pop label{display:flex;gap:6px;align-items:center;font-size:12px;padding:2px 3px;cursor:pointer;}
+.pv-pop label:hover{background:var(--bg);}
+.pv-pop .ac{display:flex;gap:10px;font-size:11px;margin-bottom:4px;}
+.pv-pop .ac a{color:var(--accent);cursor:pointer;}
+.pv-pop .mn{display:flex;flex-direction:column;gap:2px;}
+.pv-pop .mn button{border:none;background:none;text-align:left;padding:6px 8px;font-size:12px;cursor:pointer;border-radius:5px;font-family:inherit;}
+.pv-pop .mn button:hover{background:var(--accent-light);}
+.pv-note{font-size:11px;color:var(--text3);padding:8px 2px;line-height:1.6;}
+</style>
+
+<div class="pv-root" id="pvRoot">
+  <div class="pv-head" id="pvHead"></div>
+  <div class="pv-areas" id="pvAreas"></div>
+  <div class="pv-flt" id="pvFlt"></div>
+  <div class="pv-wrap" id="pvWrap"><div class="empty">載入中…</div></div>
+</div>
+<div class="pv-pop" id="pvPop" style="display:none"></div>
+
+<script>
+const PV={
+  ready:false,F:null,dims:{},cfg:null,exp:new Set(),nodes:null,lastCols:null,
+  FIELDS:[
+    {id:'yr',n:'年度',time:1},{id:'qtr',n:'季度',time:1},{id:'wk',n:'週（含季）',time:1},{id:'wn',n:'週次 W1~W13',time:1},
+    {id:'rtm',n:'通路'},{id:'hq',n:'客戶'},{id:'store',n:'門市'},
+    {id:'ph1',n:'產品線'},{id:'ph2',n:'系列'},{id:'ph3',n:'產品'},{id:'type',n:'類型'}],
+  MEAS:[{id:'st',n:'銷售 ST'},{id:'ts',n:'進貨 TS'},{id:'gap',n:'進銷差 TS−ST'},{id:'inv',n:'庫存(季末)'},{id:'st5',n:'5週均銷'},{id:'woi',n:'庫存週數 WOI'},{id:'y1st',n:'去年同期 ST'},{id:'y1ts',n:'去年同期 TS'},{id:'yoy',n:'YoY %'},{id:'srp',n:'銷售額 SRP·最新價'},{id:'srpa',n:'銷售額 SRP·當期價'},{id:'asp',n:'平均單價 SRP·最新價'},{id:'aspa',n:'平均單價 SRP·當期價'}],
+  ADD:['ts','st','gap','inv','st5','y1st','y1ts','srp','srpa'],
+  PRESETS:{
+    p1:{n:'年度→客戶（列）× 產品線（欄）',rows:['yr','hq'],cols:['ph1'],filters:[],ex:{yr:['FY23','FY24']},meas:['st']},
+    p2:{n:'客戶→產品線（列）× 年度（欄）',rows:['hq','ph1'],cols:['yr'],filters:[],ex:{yr:['FY23','FY24']},meas:['st']},
+    p3:{n:'客戶→門市（列）× 季度（欄）',rows:['hq','store'],cols:['qtr'],filters:['rtm'],ex:{yr:['FY23','FY24','FY25'],rtm:['Lifestyle']},meas:['st']},
+    p4:{n:'季度→週（列）× 通路（欄）進貨/銷售',rows:['qtr','wk'],cols:['rtm'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['ts','st']},
+    p5:{n:'週次對齊：W1~W13（列）× 季度（欄）',rows:['wn'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25'],wn:['(季度合計)']},meas:['st']},
+    p6:{n:'產品線→系列→產品（列）× 季度（欄）',rows:['ph1','ph2','ph3'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24']},meas:['st']},
+    w1:{n:'【週別明細】客戶→產品線（列）× 週（欄）・本季',rows:['hq','ph1'],cols:['wk'],filters:['rtm'],ex:{},meas:['st'],cur:true},
+    w2:{n:'【週別明細·摘要】客戶→產品線・銷量/YoY/5週均/庫存/WOI・本季',rows:['hq','ph1'],cols:[],filters:['rtm'],ex:{},meas:['st','y1st','yoy','st5','inv','woi'],cur:true},
+    s1:{n:'【門市分析】經銷商→門市（列）× 週（欄）・本季・Mono',rows:['hq','store'],cols:['wk'],filters:['rtm'],ex:{rtm:['Lifestyle']},meas:['st'],cur:true},
+    s2:{n:'【門市分析·摘要】經銷商→門市・銷量/佔比/YoY/5週均/庫存/WOI・本季・Mono',rows:['hq','store'],cols:[],filters:['rtm'],ex:{rtm:['Lifestyle']},meas:['st','y1st','yoy','st5','inv','woi'],cur:true,share:true},
+    a1:{n:'【平均單價】經銷商→產品線（列）× 季度（欄）・SRP÷銷量（當期價）',rows:['hq','ph1'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['st','aspa']},
+    m1:{n:'【零售額】客戶→產品線（列）× 季度（欄）・SRP 最新價 vs 當期價',rows:['hq','ph1'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['srp','srpa']}
+  }
+};
+const pvFmt=v=>Math.round(v).toLocaleString();
+const pvLab=(f,v)=>{if(v===''||v==null)return '(空白)';return f==='hq'?(typeof shortHq==='function'?shortHq(v):v):v;};
+const pvFld=id=>PV.FIELDS.find(x=>x.id===id);
+const pvMea=id=>PV.MEAS.find(x=>x.id===id);
+
+// ───────── 建立統一明細表（欄式儲存）─────────
+PV.build=function(){
+  const D=WK.D,names=PV.FIELDS.map(f=>f.id);
+  const dims={};names.forEach(n=>dims[n]={vals:[],idx:new Map()});
+  const col={};names.forEach(n=>col[n]=[]);
+  const M={ts:[],st:[],inv:[],y1st:[],y1ts:[],st5:[],srp:[],srpa:[]};
+  const id=(f,v)=>{const d=dims[f];let i=d.idx.get(v);if(i===undefined){i=d.vals.length;d.vals.push(v);d.idx.set(v,i);}return i;};
+  const pad=n=>String(n).padStart(2,'0');
+  const add=(q,wk,wn,rtm,hq,store,ph1,ph2,ph3,type,ts,st,inv,y1st,y1ts,st5=NaN,srp=NaN,srpa=NaN)=>{
+    col.yr.push(id('yr',q.slice(0,4)));col.qtr.push(id('qtr',q));col.wk.push(id('wk',wk));col.wn.push(id('wn',wn));
+    col.rtm.push(id('rtm',rtm));col.hq.push(id('hq',hq));col.store.push(id('store',store));
+    col.ph1.push(id('ph1',ph1));col.ph2.push(id('ph2',ph2||''));col.ph3.push(id('ph3',ph3||''));col.type.push(id('type',type));
+    M.ts.push(ts);M.st.push(st);M.inv.push(inv);M.y1st.push(y1st);M.y1ts.push(y1ts);M.st5.push(st5);M.srp.push(srp);M.srpa.push(srpa);
+  };
+  const wq=new Set(D.meta.quarters),NA=NaN;
+  // 1) 舊資料（無週、無門市）：只用於週報沒涵蓋的季度
+  for(const r of RAW){if(wq.has(r.qtr))continue;
+    add(r.qtr,'(季度合計)','(季度合計)',r.rtm,r.hq,'(未分店)',r.ph1,r.ph2,r.ph3,r.type,r.ts||0,r.st||0,NA,NA,NA);}
+  // 2) 週報：進貨（客戶層，無門市）
+  for(const r of WK.C){
+    const k=r.tsw.length;
+    for(let i=0;i<k;i++){const v=r.tsw[i]||0,last=i===k-1,y=last?(r.y1ts||0):NA;
+      if(v||(last&&r.y1ts))add(r.q,`${r.q} W${pad(i+1)}`,`W${pad(i+1)}`,r.rtm,r.hq,'(未分店)',r.ph1,r.ph2,r.ph3,r.type,v,0,NA,NA,last&&r.y1ts?r.y1ts:NA);}
+  }
+  // 3) 週報：銷售＋庫存＋去年同期（門市層）
+  for(const r of WK.S){
+    const k=r.stw.length,o=D.stores[r.sid]||{n:r.sid,h:''};
+    const nb=r.prog==='Unbranded';
+    const store=nb?`${pvLab('hq',o.h)} 非門市`:o.n;
+    for(let i=0;i<k;i++){const v=r.stw[i]||0,last=i===k-1;
+      const hasL=last&&(r.inv||r.y1st||r.st5);
+      const sv=r.srpw?r.srpw[i]:NA,sa=r.srpaw?r.srpaw[i]:NA;   // 沒有 SRP 資料（舊版資料檔）時顯示「—」
+      if(v||hasL)add(r.q,`${r.q} W${pad(i+1)}`,`W${pad(i+1)}`,r.rtm,o.h,store,r.ph1,r.ph2,r.ph3,r.type,0,v,last&&r.inv?r.inv:NA,last&&r.y1st?r.y1st:NA,NA,last&&r.st5?r.st5:NA,sv===undefined?NA:sv,sa===undefined?NA:sa);}
+  }
+  const n=col.yr.length;const F={n};
+  names.forEach(f=>F[f]=Int32Array.from(col[f]));
+  F.ts=Float32Array.from(M.ts);F.st=Float32Array.from(M.st);F.inv=Float32Array.from(M.inv);F.y1st=Float32Array.from(M.y1st);F.y1ts=Float32Array.from(M.y1ts);F.st5=Float32Array.from(M.st5);F.srp=Float64Array.from(M.srp);F.srpa=Float64Array.from(M.srpa);
+  PV.F=F;PV.dims=dims;
+};
+
+// ───────── 狀態 ─────────
+PV.defaults=()=>JSON.parse(JSON.stringify(Object.assign({sort:'val',heat:false,hideEmpty:true,share:false,cmp:'none',cmpShow:'pct',A:0,B:1,base:0},PV.PRESETS.p1)));
+PV.loadCfg=function(){
+  let c=null;
+  try{c=JSON.parse(localStorage.getItem('pv_cfg_v2')||'null');}catch(e){}
+  const ok=c&&Array.isArray(c.rows)&&Array.isArray(c.cols)&&[...c.rows,...c.cols,...(c.filters||[])].every(f=>pvFld(f))&&(c.meas||[]).every(m=>pvMea(m));
+  PV.cfg=ok?Object.assign(PV.defaults(),c):PV.defaults();
+};
+PV.save=function(){try{localStorage.setItem('pv_cfg_v2',JSON.stringify(PV.cfg));}catch(e){}};
+PV.apply=function(p){const base=PV.defaults();PV.cfg=Object.assign(base,JSON.parse(JSON.stringify(PV.PRESETS[p])));delete PV.cfg.n;
+  if(PV.cfg.cur){const cur=WK.D.meta.cur;PV.cfg.ex.qtr=PV.dims.qtr.vals.filter(v=>v!==cur);delete PV.cfg.cur;}   // 「本季」＝最新一季，不寫死
+  PV.exp=new Set();PV.cfg.base=0;PV.refresh();};
+
+// ───────── 運算 ─────────
+PV.valOf=function(a,m){
+  if(!a)return m==='ts'||m==='st'||m==='gap'?0:NaN;
+  switch(m){case 'ts':return a[0];case 'st':return a[1];case 'gap':return a[0]-a[1];
+    case 'inv':return a[5]?a[2]:NaN;case 'y1st':return a[6]?a[3]:NaN;case 'y1ts':return a[7]?a[4]:NaN;
+    case 'srp':return a[10]?a[8]:NaN;case 'srpa':return a[11]?a[9]:NaN;
+    case 'asp':return (a[10]&&a[14]>0)?a[8]/a[14]:NaN;case 'aspa':return (a[11]&&a[15]>0)?a[9]/a[15]:NaN;case 'st5':return a[13]?a[12]:NaN;
+    case 'woi':return (a[5]&&a[13]&&a[12]>0)?a[2]/a[12]:NaN;
+    case 'yoy':return (a[6]&&a[3]>0)?(a[1]-a[3])/a[3]*100:NaN;}
+};
+PV.SUMI=[0,1,2,3,4,8,9,12,14,15];PV.FLGI=[5,6,7,10,11,13];
+PV.sumCells=function(node){const t=new Float64Array(16);node.cells.forEach(a=>{for(const i of PV.SUMI)t[i]+=a[i];for(const i of PV.FLGI)if(a[i])t[i]=1;});return t;};
+PV.fmtM=function(m,v){if(!(v===v))return '—';if(m==='woi')return v.toFixed(1);if(m==='yoy')return (v>0?'+':'')+v.toFixed(1)+'%';return Math.round(v).toLocaleString();};
+PV.compute=function(){
+  const c=PV.cfg,F=PV.F,N=F.n,R=c.rows,C=c.cols;
+  const fil=[];
+  Object.keys(c.ex).forEach(f=>{const ex=c.ex[f];if(!ex||!ex.length)return;const d=PV.dims[f],m=new Uint8Array(d.vals.length);ex.forEach(v=>{const i=d.idx.get(v);if(i!==undefined)m[i]=1;});fil.push([F[f],m]);});
+  const rc=R.map(f=>F[f]),cc=C.map(f=>F[f]);
+  const nodes=new Map(),colMap=new Map(),G={key:'__G',level:-1,cells:new Map(),children:[]};
+  const tsA=F.ts,stA=F.st,invA=F.inv,y1sA=F.y1st,y1tA=F.y1ts,s5A=F.st5,spA=F.srp,saA=F.srpa;
+  const acc=(nd,ck,i)=>{let a=nd.cells.get(ck);if(!a){a=new Float64Array(16);nd.cells.set(ck,a);}
+    a[0]+=tsA[i];a[1]+=stA[i];let v=invA[i];if(v===v){a[2]+=v;a[5]=1;}v=y1sA[i];if(v===v){a[3]+=v;a[6]=1;}v=y1tA[i];if(v===v){a[4]+=v;a[7]=1;}
+    v=spA[i];if(v===v){a[8]+=v;a[10]=1;a[14]+=stA[i];}v=saA[i];if(v===v){a[9]+=v;a[11]=1;a[15]+=stA[i];}v=s5A[i];if(v===v){a[12]+=v;a[13]=1;}};
+  outer:for(let i=0;i<N;i++){
+    for(let j=0;j<fil.length;j++)if(fil[j][1][fil[j][0][i]])continue outer;
+    let ck='';if(cc.length){ck=String(cc[0][i]);for(let j=1;j<cc.length;j++)ck+=','+cc[j][i];}
+    if(!colMap.has(ck))colMap.set(ck,cc.map(a=>a[i]));
+    acc(G,ck,i);
+    let key='';
+    for(let k=0;k<rc.length;k++){key=k?key+','+rc[k][i]:String(rc[k][i]);
+      let nd=nodes.get(key);if(!nd){nd={key,level:k,path:rc.slice(0,k+1).map(a=>a[i]),cells:new Map(),children:[]};nodes.set(key,nd);}
+      acc(nd,ck,i);}
+  }
+  const roots=[];
+  nodes.forEach(nd=>{if(nd.level===0)roots.push(nd);else{const pk=nd.path.slice(0,-1).join(',');nodes.get(pk).children.push(nd);}});
+  // 欄排序
+  const isTime=f=>!!pvFld(f).time;
+  const m0=c.meas[0]||'st';
+  const prefTot=new Map();
+  colMap.forEach((path,ck)=>{const v=PV.valOf(G.cells.get(ck),m0)||0;for(let j=1;j<=path.length;j++){const pk=path.slice(0,j).join(',');prefTot.set(pk,(prefTot.get(pk)||0)+v);}});
+  const cols=[...colMap.entries()].map(([key,path])=>({key,path}));
+  cols.sort((x,y)=>{for(let j=0;j<C.length;j++){if(x.path[j]===y.path[j])continue;
+    const d=PV.dims[C[j]].vals;
+    if(isTime(C[j]))return d[x.path[j]]<d[y.path[j]]?-1:1;
+    const tx=prefTot.get(x.path.slice(0,j+1).join(','))||0,ty=prefTot.get(y.path.slice(0,j+1).join(','))||0;
+    if(tx!==ty)return ty-tx;return d[x.path[j]]<d[y.path[j]]?-1:1;}return 0;});
+  if(!cols.length)cols.push({key:'',path:[]});
+  PV.nodes=nodes;PV.roots=roots;PV.G=G;PV.cols=cols;
+};
+PV.nodeEmpty=function(n){const t=PV.sumCells(n);return !PV.cfg.meas.some(m=>{const v=PV.valOf(t,m);return v===v&&v!==0;});};
+
+// ───────── 繪製 ─────────
+PV.refresh=function(){PV.save();PV.renderAreas();PV.renderTable();PV.renderHead();};
+PV.renderHead=function(){
+  const c=PV.cfg;
+  const sel=(opts,cur,fn)=>`<select class="tool-sel" onchange="${fn}">${opts.map(o=>`<option value="${o[0]}"${String(o[0])===String(cur)?' selected':''}>${o[1]}</option>`).join('')}</select>`;
+  let cmpX='';
+  if(c.cmp==='pair'&&PV.cols){const L=PV.cols.map((p,i)=>[i,p.path.length?p.path.map((v,j)=>pvLab(c.cols[j],PV.dims[c.cols[j]].vals[v])).join(' / '):'(全部)']);
+    cmpX=` <span class="lb">A</span>${sel(L,c.A,"PV.set('A',+this.value)")}<span class="lb">B</span>${sel(L,c.B,"PV.set('B',+this.value)")}`;}
+  document.getElementById('pvHead').innerHTML=
+    '<span class="lb">範本</span>'+sel([['','— 選擇 —']].concat(Object.entries(PV.PRESETS).map(([k,v])=>[k,v.n])),'',"if(this.value)PV.apply(this.value)")+
+    '<span class="lb">指標</span><span class="pv-pill">'+PV.MEAS.map(m=>`<button class="${c.meas.includes(m.id)?'on':''}" onclick="PV.togMeas('${m.id}')">${m.n}</button>`).join('')+'</span>'+
+    '<span class="lb">比較</span>'+sel([['none','無'],['base','對基準欄（點欄標題設定）'],['prev','對前一欄'],['pair','自訂兩欄 A vs B']],c.cmp,"PV.set('cmp',this.value)")+cmpX+
+    (c.cmp!=='none'?sel([['pct','差異 %'],['abs','差額'],['both','兩者']],c.cmpShow,"PV.set('cmpShow',this.value)"):'')+
+    '<span class="lb">排序</span>'+sel([['val','依數值'],['name','依名稱']],c.sort,"PV.set('sort',this.value)")+
+    `<button class="tbtn${c.share?' on':''}" onclick="PV.set('share',${!c.share})" title="在每格下方顯示佔該欄總計的百分比">佔比</button>`+
+    `<button class="tbtn${c.heat?' on':''}" onclick="PV.set('heat',${!c.heat})">熱度</button>`+
+    `<button class="tbtn${c.hideEmpty?' on':''}" onclick="PV.set('hideEmpty',${!c.hideEmpty})">隱藏空列</button>`+
+    '<span class="lb">展開至</span><span class="pv-pill">'+c.rows.map((_,i)=>`<button onclick="PV.expandTo(${i+1})">${i+1}</button>`).join('')+'</span>'+
+    '<button class="tbtn" onclick="PV.expandTo(0)">全展開</button>'+
+    '<button class="tbtn-dl" style="margin-left:auto" onclick="PV.xlsx()">⬇ 下載 Excel</button>';
+};
+PV.chip=(f,z)=>{const fd=pvFld(f),ex=(PV.cfg.ex[f]||[]).length;
+  return `<span class="pv-chip" draggable="true" data-f="${f}" data-z="${z}">${fd.n}<button class="pv-fb${ex?' act':''}" data-act="flt" data-f="${f}" title="選擇要顯示的${fd.n}">▼ 篩選${ex?`（排除 ${ex}）`:''}</button><b data-act="del" data-f="${f}" title="從版面移除">×</b></span>`;};
+PV.renderFlt=function(){
+  const c=PV.cfg,el=document.getElementById('pvFlt');
+  const act=Object.keys(c.ex).filter(f=>(c.ex[f]||[]).length&&pvFld(f));
+  if(!act.length){el.className='pv-flt';el.innerHTML='';return;}
+  el.className='pv-flt on';
+  el.innerHTML='<b>目前篩選：</b>'+act.map(f=>{const n=c.ex[f].length,tot=PV.dims[f].vals.length;
+    return `<span class="pv-chip">${pvFld(f).n}：${n>=tot?'<b style="color:#c0392b">全部排除</b>':`排除 ${n} 項`}<button class="pv-fb act" data-act="flt" data-f="${f}" title="修改">修改</button><b data-act="clr" data-f="${f}" title="清除此篩選">×</b></span>`;}).join('')+'<a onclick="PV.clearFilters()">清除全部篩選</a>';
+};
+PV.clearFilters=function(){PV.cfg.ex={};PV.exp=new Set();PV.refresh();};
+PV.renderAreas=function(){
+  PV.renderFlt();
+  const c=PV.cfg,used=new Map();c.rows.forEach(f=>used.set(f,'列'));c.cols.forEach(f=>used.set(f,'欄'));(c.filters||[]).forEach(f=>used.set(f,'篩選'));
+  const zone=(z,t,arr,hint)=>`<div class="pv-zone" data-z="${z}"><div class="zt">${t}</div><div class="zb">${arr.length?arr.map(f=>PV.chip(f,z)).join(''):`<span class="hint">${hint}</span>`}</div></div>`;
+  document.getElementById('pvAreas').innerHTML=
+    `<div class="pv-zone" data-z="list"><div class="zt">欄位（拖到右側區域，或點選加入）</div><div class="zb">${PV.FIELDS.map(f=>`<span class="pv-chip lc${used.has(f.id)?' used':''}" draggable="true" data-f="${f.id}" data-z="list" title="${used.get(f.id)?'目前在：'+used.get(f.id):''}">${f.n}</span>`).join('')}</div></div>`+
+    zone('rows','列 ↓（由上到下＝往下鑽的層級）',c.rows,'拖入欄位')+
+    zone('cols','欄 →（由左到右＝巢狀層級）',c.cols,'拖入欄位（可留空）')+
+    zone('filters','篩選',c.filters||[],'拖入欄位後點 ▾ 選值');
+};
+PV.cellDelta=function(v,b,show,m){
+  if(!(v===v)||!(b===b)||v===0||b===0)return '';
+  const d=v-b,p=b?d/Math.abs(b)*100:null;
+  const cls=d>0?'delta-up':d<0?'delta-dn':'delta-zero',ar=d>0?'▲':d<0?'▼':'';
+  const ps=p===null?'—':`${ar}${Math.abs(p).toFixed(1)}%`,as=`${d>0?'+':''}${m==='woi'||m==='yoy'?d.toFixed(1):pvFmt(d)}`;
+  return `<div class="pv-d ${cls}">${show==='pct'?ps:show==='abs'?as:ps+' · '+as}</div>`;
+};
+PV.renderTable=function(){
+  const wrap=document.getElementById('pvWrap'),c=PV.cfg;
+  if(!c.rows.length&&!c.cols.length){wrap.innerHTML='<div class="empty">請把欄位拖到「列」或「欄」</div>';return;}
+  PV.compute();
+  const R=c.rows,C=c.cols,meas=c.meas,cols=PV.cols,nm=meas.length;
+  const total=PV.G;
+  if(!total.cells.size){wrap.innerHTML=`<div class="empty" style="padding:50px">沒有符合的資料。<br>目前的篩選條件把資料全部排除了（見上方「目前篩選」）。<br><br><button class="tbtn on" onclick="PV.clearFilters()">清除全部篩選</button></div>`;PV.shown=null;return;}
+  // 欄位上限
+  const MAXC=150;let truncated=false,cl=cols;if(cols.length>MAXC){cl=cols.slice(0,MAXC);truncated=true;}
+  // 列
+  const m0=meas[0];
+  const rowsOut=[];
+  const nameOf=(f,v)=>PV.dims[f].vals[v];
+  const sortList=(list,level)=>{const f=R[level];
+    if(pvFld(f).time||c.sort==='name')return list.slice().sort((a,b)=>nameOf(f,a.path[level])<nameOf(f,b.path[level])?-1:1);
+    const tv=n=>{const t=PV.sumCells(n);return PV.valOf(t,m0)||0;};
+    return list.map(n=>[n,tv(n)]).sort((x,y)=>y[1]-x[1]||(nameOf(f,x[0].path[level])<nameOf(f,y[0].path[level])?-1:1)).map(x=>x[0]);};
+  const walk=list=>{if(!list.length)return;const lv=list[0].level;
+    for(const n of sortList(list,lv)){if(c.hideEmpty&&PV.nodeEmpty(n))continue;rowsOut.push(n);if(lv<R.length-1&&PV.exp.has(n.key))walk(n.children);}};
+  if(R.length)walk(PV.roots);
+  const MAXR=3000;const rtrunc=rowsOut.length>MAXR;if(rtrunc)rowsOut.length=MAXR;
+  // 表頭
+  const showMeasRow=nm>1;
+  const hdrRows=Math.max(C.length,1)+(showMeasRow?1:0);
+  const useTotCol=C.length>0&&cols.length>1;
+  const cmpBase=c.cmp==='base'?Math.min(c.base,cl.length-1):-1;
+  let head='';
+  const rowLabel=R.length?R.map(f=>pvFld(f).n).join(' › '):'';
+  for(let lv=0;lv<Math.max(C.length,1);lv++){
+    let tr='<tr>';
+    if(lv===0)tr+=`<th class="rh" rowspan="${hdrRows}" style="top:0">${rowLabel||'&nbsp;'}</th>`;
+    if(C.length){
+      let i=0;const topPx=lv*28;
+      while(i<cl.length){let j=i;const key=cl[i].path.slice(0,lv+1).join(',');
+        while(j+1<cl.length&&cl[j+1].path.slice(0,lv+1).join(',')===key)j++;
+        const leaf=lv===C.length-1,span=(j-i+1)*nm;
+        const cls=(leaf&&c.cmp==='base'?'bc':'')+(leaf&&i===cmpBase?' base':'');
+        tr+=`<th class="${cls}" colspan="${span}" style="top:${topPx}px"${leaf&&c.cmp==='base'?` data-bc="${i}" title="設為基準欄"`:''}>${pvLab(C[lv],nameOf(C[lv],cl[i].path[lv]))}${leaf&&i===cmpBase?' ◎':''}</th>`;
+        i=j+1;}
+      if(lv===0&&useTotCol)tr+=`<th class="tot" colspan="${nm}" rowspan="${C.length}" style="top:0">總計</th>`;
+      if(lv===0&&c.cmp==='pair'&&cl.length>1){const lb=p=>p.path.map((v,j)=>pvLab(C[j],nameOf(C[j],v))).join('/');tr+=`<th class="tot" colspan="${nm*2}" rowspan="${C.length}" style="top:0">${lb(cl[Math.min(c.A,cl.length-1)])} − ${lb(cl[Math.min(c.B,cl.length-1)])}</th>`;}
+    }else{tr+=nm>1?'':`<th style="top:0">${pvMea(meas[0]).n}</th>`;}
+    head+=tr+'</tr>';
+  }
+  if(showMeasRow||(!C.length&&nm>1)){
+    let tr='<tr>';const top=Math.max(C.length,1)*28;
+    for(let i=0;i<Math.max(cl.length,1);i++)meas.forEach(m=>tr+=`<th style="top:${top}px">${pvMea(m).n}</th>`);
+    if(useTotCol)meas.forEach(m=>tr+=`<th class="tot" style="top:${top}px">${pvMea(m).n}</th>`);
+    if(c.cmp==='pair'&&cl.length>1)meas.forEach(m=>{tr+=`<th class="tot" style="top:${top}px">${pvMea(m).n} A−B</th><th class="tot" style="top:${top}px">A÷B−1</th>`;});
+    head+=tr+'</tr>';
+  }
+  // 熱度最大值（依 指標 × 層級）
+  const hmax={};
+  if(c.heat)rowsOut.forEach(n=>cl.forEach(p=>meas.forEach(m=>{const v=PV.valOf(n.cells.get(p.key),m);if(v===v){const k=m+'|'+n.level;if(!(hmax[k]>=Math.abs(v)))hmax[k]=Math.abs(v);}})));
+  const A=Math.min(c.A,cl.length-1),B=Math.min(c.B,cl.length-1);
+  const cellsOf=(n,isLevelRow)=>{
+    let h='';
+    const g=(p)=>n.cells.get(p.key);
+    cl.forEach((p,ci)=>meas.forEach(m=>{
+      const v=PV.valOf(g(p),m);
+      let bg='';if(c.heat&&!isLevelRow&&v===v&&hmax[m+'|'+n.level])bg=` style="background:rgba(0,113,227,${(0.05+0.45*Math.abs(v)/hmax[m+'|'+n.level]).toFixed(2)})"`;
+      let dl='';
+      if(c.cmp==='base'&&ci!==cmpBase)dl=PV.cellDelta(v,PV.valOf(g(cl[cmpBase]),m),c.cmpShow,m);
+      else if(c.cmp==='prev'&&ci>0&&cl[ci-1].path.slice(0,-1).join(',')===p.path.slice(0,-1).join(','))dl=PV.cellDelta(v,PV.valOf(g(cl[ci-1]),m),c.cmpShow,m);
+      let sh='';if(c.share&&PV.ADD.includes(m)&&v===v&&v!==0){const gv=PV.valOf(total.cells.get(p.key),m);if(gv>0)sh=`<div class="pv-d" style="color:#6e6e73">${(v/gv*100).toFixed(1)}%</div>`;}
+      h+=`<td${bg}>${v===v?(v===0?'<span class="pv-na">–</span>':PV.fmtM(m,v)):'<span class="pv-na">—</span>'}${dl}${sh}</td>`;}));
+    if(useTotCol){const t=PV.sumCells(n),gt=PV.sumCells(total);meas.forEach(m=>{const v=PV.valOf(t,m);let sh='';if(c.share&&PV.ADD.includes(m)&&v===v&&v!==0){const gv=PV.valOf(gt,m);if(gv>0)sh=`<div class="pv-d" style="color:#6e6e73">${(v/gv*100).toFixed(1)}%</div>`;}
+      h+=`<td class="tot">${v===v?PV.fmtM(m,v):'<span class="pv-na">—</span>'}${sh}</td>`;});}
+    if(c.cmp==='pair'&&cl.length>1)meas.forEach(m=>{const a=PV.valOf(g(cl[A]),m),b=PV.valOf(g(cl[B]),m);
+      const d=(a===a&&b===b)?a-b:NaN,p=(a===a&&b===b&&b)?(a-b)/Math.abs(b)*100:NaN;
+      h+=`<td class="cmp">${d===d?(d>0?'+':'')+(m==='woi'||m==='yoy'?d.toFixed(1):pvFmt(d)):'—'}</td><td class="cmp">${p===p?`<span class="${p>0?'delta-up':p<0?'delta-dn':'delta-zero'}">${p>0?'▲':p<0?'▼':''}${Math.abs(p).toFixed(1)}%</span>`:'—'}</td>`;});
+    return h;};
+  let body='';
+  const aoa=[],hdrAoa=[];
+  rowsOut.forEach(n=>{
+    const f=R[n.level],lab=pvLab(f,nameOf(f,n.path[n.level])),exp=n.level<R.length-1;
+    body+=`<tr class="${n.level===0&&R.length>1?'l0':''}"><td class="lab" style="padding-left:${10+n.level*16}px"><span class="pv-tg" data-tg="${n.key}">${exp?(PV.exp.has(n.key)?'▾':'▸'):''}</span>${lab}</td>${cellsOf(n,false)}</tr>`;
+  });
+  if(R.length)body+=`<tr class="gt"><td class="lab">總計</td>${cellsOf(total,true)}</tr>`;
+  else body+=`<tr class="gt"><td class="lab">${C.length?'總計':'全部'}</td>${cellsOf(total,true)}</tr>`;
+  wrap.innerHTML=`<div class="pv-card"><table class="pv-tbl"><thead>${head}</thead><tbody>${body}</tbody></table></div>
+    <div class="pv-note">${truncated?`⚠ 欄位共 ${cols.length} 個，只顯示前 ${MAXC} 個，請加篩選或把欄位改放到列。　`:''}${rtrunc?`⚠ 列數過多，只顯示前 ${MAXR} 列。　`:''}
+    SRP＝Apple 台灣 ALP 報價（含稅），取自 NPI 資料夾，由新到舊搜尋；訂製機(CTO)用 CTO 代碼比對。<b>最新價</b>＝每個料號用最新報價；<b>當期價</b>＝該週當時有效的報價（較貼近當時實際售價）。SRP 金額僅 FY26Q1 起有（更早資料沒有料號）；門市層金額以「同客戶同產品的平均單價」推算。　資料：FY26Q1 起用 Apple 週報（有逐週、門市、庫存）；更早季度為舊資料，僅有季度合計，週與門市會顯示為「(季度合計)」「(未分店)」。
+    進貨 TS 無門市資料，歸在「(未分店)」；庫存、去年同期為各季最後一週的快照，請勿在「週」的層級跨週加總。篩選：僅 iPhone/iPad/Mac/Watch/AirPods，排除 JING JING、LINKWELL。</div>`;
+  PV.shown={rowsOut,cl,meas,useTotCol};
+};
+
+// ───────── 互動 ─────────
+PV.set=function(k,v){PV.cfg[k]=v;PV.refresh();};
+PV.togMeas=function(m){const a=PV.cfg.meas,i=a.indexOf(m);if(i>=0){if(a.length>1)a.splice(i,1);}else a.push(m);PV.refresh();};
+PV.expandTo=function(N){PV.exp=new Set();if(N===0)N=PV.cfg.rows.length;PV.nodes&&PV.nodes.forEach(n=>{if(n.level<N-1)PV.exp.add(n.key);});PV.renderTable();};
+PV.place=function(f,zone,beforeF){
+  const c=PV.cfg;
+  ['rows','cols','filters'].forEach(z=>{const a=c[z]||(c[z]=[]);const i=a.indexOf(f);if(i>=0)a.splice(i,1);});
+  if(zone==='list')return;
+  const a=c[zone]||(c[zone]=[]);const bi=beforeF?a.indexOf(beforeF):-1;
+  if(bi>=0)a.splice(bi,0,f);else a.push(f);
+};
+PV.changeLayout=function(){PV.exp=new Set();PV.cfg.base=0;PV.refresh();};
+PV.openPop=function(html,anchor){
+  const p=document.getElementById('pvPop');p.innerHTML=html;p.style.display='flex';
+  const r=anchor.getBoundingClientRect();p.style.left=Math.min(r.left,window.innerWidth-270)+'px';p.style.top=Math.min(r.bottom+4,window.innerHeight-p.offsetHeight-8)+'px';
+};
+PV.closePop=()=>{document.getElementById('pvPop').style.display='none';};
+PV.filterPop=function(f,anchor){
+  const d=PV.dims[f],ex=new Set(PV.cfg.ex[f]||[]);
+  const ord=d.vals.map((v,i)=>v).sort((a,b)=>a<b?-1:1);
+  PV.pf={f,ord};
+  PV.openPop(`<div style="font-size:12px;font-weight:600;margin-bottom:4px">${pvFld(f).n}　篩選</div><input type="text" placeholder="搜尋…" oninput="PV.popSearch(this.value)">
+    <div class="ac"><a onclick="PV.popAll(true)">全選</a><a onclick="PV.popAll(false)">全不選</a></div>
+    <div class="ls" id="pvPopList">${ord.map(v=>`<label data-v="${encodeURIComponent(v)}"><input type="checkbox" ${ex.has(v)?'':'checked'} onchange="PV.popTog(this)" data-v="${encodeURIComponent(v)}">${pvLab(f,v)}</label>`).join('')}</div>`,anchor);
+};
+PV.popTog=function(cb){const f=PV.pf.f,v=decodeURIComponent(cb.dataset.v),a=PV.cfg.ex[f]||(PV.cfg.ex[f]=[]);const i=a.indexOf(v);
+  if(cb.checked){if(i>=0)a.splice(i,1);}else if(i<0)a.push(v);PV.exp=new Set(PV.exp);PV.save();PV.renderAreas();PV.renderHead();PV.renderTable();};
+PV.popAll=function(on){const f=PV.pf.f;PV.cfg.ex[f]=on?[]:PV.pf.ord.slice();document.querySelectorAll('#pvPopList input').forEach(cb=>cb.checked=on);PV.save();PV.renderAreas();PV.renderHead();PV.renderTable();};
+PV.popSearch=function(q){q=q.toLowerCase();document.querySelectorAll('#pvPopList label').forEach(l=>{l.style.display=decodeURIComponent(l.dataset.v).toLowerCase().includes(q)||l.textContent.toLowerCase().includes(q)?'':'none';});};
+PV.xlsx=function(){
+  if(!window.XLSX||!PV.shown)return;const {rowsOut,cl,meas,useTotCol}=PV.shown,c=PV.cfg;
+  const nameOf=(f,v)=>pvLab(f,PV.dims[f].vals[v]);
+  const head=[c.rows.map(f=>pvFld(f).n).join(' › ')];
+  const lab=p=>p.path.map((v,j)=>nameOf(c.cols[j],v)).join(' / ')||'(全部)';
+  cl.forEach(p=>meas.forEach(m=>head.push((meas.length>1?lab(p)+' | '+pvMea(m).n:lab(p)))));
+  if(useTotCol)meas.forEach(m=>head.push('總計 '+pvMea(m).n));
+  const line=(label,n)=>{const r=[label];cl.forEach(p=>meas.forEach(m=>{const v=PV.valOf(n.cells.get(p.key),m);r.push(v===v?(m==='woi'||m==='yoy'?+v.toFixed(1):Math.round(v)):'');}));
+    if(useTotCol){const t=PV.sumCells(n);meas.forEach(m=>{const v=PV.valOf(t,m);r.push(v===v?(m==='woi'||m==='yoy'?+v.toFixed(1):Math.round(v)):'');});}return r;};
+  const aoa=[head];rowsOut.forEach(n=>aoa.push(line('  '.repeat(n.level)+nameOf(c.rows[n.level],n.path[n.level]),n)));aoa.push(line('總計',PV.G));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'自由樞紐');
+  XLSX.writeFile(wb,`Apple_自由樞紐_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`);
+};
+
+PV.bind=function(){
+  const areas=document.getElementById('pvAreas'),wrap=document.getElementById('pvWrap');
+  const onAct=e=>{
+    const t=e.target.closest('[data-act],.pv-chip.lc');if(!t)return;
+    if(t.dataset.act==='clr'){PV.cfg.ex[t.dataset.f]=[];PV.exp=new Set();PV.refresh();return;}
+    if(t.dataset.act==='del'){PV.place(t.dataset.f,'list');PV.changeLayout();return;}
+    if(t.dataset.act==='flt'){e.stopPropagation();PV.filterPop(t.dataset.f,t);return;}
+    if(t.classList.contains('lc')){e.stopPropagation();const f=t.dataset.f;
+      PV.openPop(`<div style="font-size:12px;font-weight:600;margin-bottom:4px">${pvFld(f).n}</div><div class="mn"><button data-m="rows">＋ 加到「列」</button><button data-m="cols">＋ 加到「欄」</button><button data-m="filters">＋ 加到「篩選」</button><button data-m="list">－ 移除</button></div>`,t);
+      document.querySelectorAll('#pvPop .mn button').forEach(b=>b.onclick=()=>{PV.place(f,b.dataset.m);PV.closePop();PV.changeLayout();});}
+  };
+  areas.addEventListener('click',onAct);document.getElementById('pvFlt').addEventListener('click',onAct);
+  document.addEventListener('click',e=>{if(!e.target.closest('#pvPop'))PV.closePop();});
+  // 拖拉
+  let drag=null;
+  areas.addEventListener('dragstart',e=>{const c=e.target.closest('.pv-chip');if(!c)return;drag={f:c.dataset.f,z:c.dataset.z};e.dataTransfer.setData('text/plain',c.dataset.f);e.dataTransfer.effectAllowed='move';});
+  areas.addEventListener('dragover',e=>{const z=e.target.closest('.pv-zone');if(z){e.preventDefault();areas.querySelectorAll('.pv-zone').forEach(x=>x.classList.toggle('over',x===z));}});
+  areas.addEventListener('dragleave',e=>{if(!e.relatedTarget||!e.relatedTarget.closest||!e.relatedTarget.closest('.pv-zone'))areas.querySelectorAll('.pv-zone').forEach(x=>x.classList.remove('over'));});
+  areas.addEventListener('drop',e=>{e.preventDefault();areas.querySelectorAll('.pv-zone').forEach(x=>x.classList.remove('over'));
+    const z=e.target.closest('.pv-zone');if(!z||!drag)return;
+    const before=e.target.closest('.pv-chip');let bf=null;
+    if(before&&before.dataset.z===z.dataset.z&&before.dataset.f!==drag.f){const r=before.getBoundingClientRect();if(e.clientX<r.left+r.width/2)bf=before.dataset.f;else{const nx=before.nextElementSibling;bf=nx&&nx.dataset?nx.dataset.f:null;}}
+    PV.place(drag.f,z.dataset.z,bf);drag=null;PV.changeLayout();});
+  wrap.addEventListener('click',e=>{
+    const tg=e.target.closest('[data-tg]');if(tg){const k=tg.dataset.tg;PV.exp.has(k)?PV.exp.delete(k):PV.exp.add(k);PV.renderTable();return;}
+    const bc=e.target.closest('[data-bc]');if(bc){PV.cfg.base=+bc.dataset.bc;PV.save();PV.renderTable();}
+  });
+};
+PV.show=async function(){
+  document.body.classList.add('pv-mode');
+  if(!PV.ready){
+    document.getElementById('pvWrap').innerHTML='<div class="empty">載入資料中…</div>';
+    if(!(await WK.load())){document.getElementById('pvWrap').innerHTML=document.getElementById('wkBody').innerHTML;return;}
+    PV.build();PV.loadCfg();PV.bind();PV.ready=true;
+  }
+  PV.refresh();
+};
+PV.hide=function(){document.body.classList.remove('pv-mode');PV.closePop&&PV.closePop();};
+</script>
+<!--PV_UI_END-->
 
     <div class="content">
       <!-- PIVOT -->
@@ -674,9 +1344,13 @@ function update(){
 
 function switchTab(t){
   currentTab=t;
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active',['pivot','ranking','trend'][i]===t);
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.tab===t);
   });
+  if(t==='pivot2'){WK.hide();PV.show();return;}
+  if(t==='wkov'||t==='wkdet'||t==='wkstore'){PV.hide();WK.show(t);return;}
+  PV.hide();
+  WK.hide();
   document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab_'+t).classList.add('active');
   document.getElementById('tb_pivot').style.display   = t==='pivot'  ?'flex':'none';
@@ -1769,6 +2443,7 @@ window.onload=()=>{
   document.getElementById('btnNonZero').classList.add('on');
   initTrendFixSel();
   update();
+  switchTab('pivot2');   // 預設開啟自由樞紐
 };
 </script>
 </body>
