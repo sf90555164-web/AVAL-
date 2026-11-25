@@ -747,7 +747,7 @@ const PV={
     {id:'yr',n:'年度',time:1},{id:'qtr',n:'季度',time:1},{id:'wk',n:'週（含季）',time:1},{id:'wn',n:'週次 W1~W13',time:1},
     {id:'rtm',n:'通路'},{id:'hq',n:'客戶'},{id:'store',n:'門市'},
     {id:'ph1',n:'產品線'},{id:'ph2',n:'系列'},{id:'ph3',n:'產品'},{id:'type',n:'類型'}],
-  MEAS:[{id:'st',n:'銷售 ST'},{id:'ts',n:'進貨 TS'},{id:'gap',n:'進銷差 TS−ST'},{id:'inv',n:'庫存(季末)'},{id:'st5',n:'5週均銷'},{id:'woi',n:'庫存週數 WOI'},{id:'y1st',n:'去年同期 ST'},{id:'y1ts',n:'去年同期 TS'},{id:'yoy',n:'YoY %'},{id:'srp',n:'銷售額 SRP·最新價'},{id:'srpa',n:'銷售額 SRP·當期價'},{id:'asp',n:'平均單價 SRP·最新價'},{id:'aspa',n:'平均單價 SRP·當期價'}],
+  MEAS:[{id:'st',n:'銷售 ST'},{id:'ts',n:'進貨 TS'},{id:'gap',n:'進銷差 TS−ST'},{id:'inv',n:'庫存(季末)'},{id:'st5',n:'5週均銷'},{id:'woi',n:'庫存週數 WOI'},{id:'y1st',n:'去年同期 ST'},{id:'y1ts',n:'去年同期 TS'},{id:'yoy',n:'YoY %'},{id:'srp',n:'銷售額 SRP含稅·最新價'},{id:'srpa',n:'銷售額 SRP含稅·當期價'},{id:'asp',n:'平均單價 SRP含稅·最新價'},{id:'aspa',n:'平均單價 SRP含稅·當期價'}],
   ADD:['ts','st','gap','inv','st5','y1st','y1ts','srp','srpa'],
   PRESETS:{
     p1:{n:'年度→客戶（列）× 產品線（欄）',rows:['yr','hq'],cols:['ph1'],filters:[],ex:{yr:['FY23','FY24']},meas:['st']},
@@ -760,8 +760,8 @@ const PV={
     w2:{n:'【週別明細·摘要】客戶→產品線・銷量/YoY/5週均/庫存/WOI・本季',rows:['hq','ph1'],cols:[],filters:['rtm'],ex:{},meas:['st','y1st','yoy','st5','inv','woi'],cur:true},
     s1:{n:'【門市分析】經銷商→門市（列）× 週（欄）・本季・Mono',rows:['hq','store'],cols:['wk'],filters:['rtm'],ex:{rtm:['Lifestyle']},meas:['st'],cur:true},
     s2:{n:'【門市分析·摘要】經銷商→門市・銷量/佔比/YoY/5週均/庫存/WOI・本季・Mono',rows:['hq','store'],cols:[],filters:['rtm'],ex:{rtm:['Lifestyle']},meas:['st','y1st','yoy','st5','inv','woi'],cur:true,share:true},
-    a1:{n:'【平均單價】經銷商→產品線（列）× 季度（欄）・SRP÷銷量（當期價）',rows:['hq','ph1'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['st','aspa']},
-    m1:{n:'【零售額】客戶→產品線（列）× 季度（欄）・SRP 最新價 vs 當期價',rows:['hq','ph1'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['srp','srpa']}
+    a1:{n:'【平均單價】經銷商→產品線（列）× 季度（欄）・SRP 含稅÷銷量（當期價）',rows:['hq','ph1'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['st','aspa']},
+    m1:{n:'【零售額】客戶→產品線（列）× 季度（欄）・SRP 含稅・最新價 vs 當期價',rows:['hq','ph1'],cols:['qtr'],filters:[],ex:{yr:['FY23','FY24','FY25']},meas:['srp','srpa']}
   }
 };
 const pvFmt=v=>Math.round(v).toLocaleString();
